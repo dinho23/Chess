@@ -40,7 +40,9 @@ public:
 
 	std::vector<std::pair<int, int>> pawnChecks(Piece* piece);
 
+	bool isIllegalMove(Piece* piece, int newI, int newJ);
 	void removeIlegalMoves(std::vector<std::pair<int,int>>& allMoves, Piece* piece);
+	void removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece* piece);
 
 	std::pair<int,int> inCheck();
 	bool kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, const std::string& type);

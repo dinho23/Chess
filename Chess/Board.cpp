@@ -254,6 +254,9 @@ std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
 	}
 
 	removeIlegalMoves(availableMoves, piece);
+	if (typeid(*piece) == typeid(King)) {
+		removeIlegalCastle(availableMoves, piece);
+	}
 	return availableMoves;
 }
 
@@ -502,7 +505,7 @@ std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece)
 	std::vector<std::pair<int, int>> allMoves{};
 
 	if (castleAvailable(piece).first) {
-		allMoves.push_back({ piece->getPosition().first, 2});
+		allMoves.push_back({ piece->getPosition().first, 2 });
 	}
 
 	if (castleAvailable(piece).second) {
@@ -522,6 +525,7 @@ std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece)
 			}
 		}
 	}
+
 
 	return allMoves;
 }
@@ -556,39 +560,67 @@ std::vector<std::pair<int, int>> Board::pawnChecks(Piece* piece)
 	return pawnChecks;
 }
 
+bool Board::isIllegalMove(Piece* piece, int newI, int newJ)
+{
+	int tempI = piece->getPosition().first;
+	int tempJ = piece->getPosition().second;
+	bool illegal{};
+
+	Piece* savedPiece = board[newI][newJ];
+	board[newI][newJ] = board[tempI][tempJ];
+	board[newI][newJ]->setPosition(newI, newJ);
+	board[tempI][tempJ] = nullptr;
+
+	if (inCheck().first) {
+		illegal = true;
+	}
+
+	board[tempI][tempJ] = board[newI][newJ];
+	board[tempI][tempJ]->setPosition(tempI, tempJ);
+	board[newI][newJ] = savedPiece;
+
+	if (board[tempI][tempJ]) {
+		board[tempI][tempJ]->setPosition(tempI, tempJ);
+	}
+
+	if (board[newI][newJ]) {
+		board[newI][newJ]->setPosition(newI, newJ);
+	}
+
+	return illegal;
+}
+
 void Board::removeIlegalMoves(std::vector<std::pair<int, int>>& allMoves, Piece* piece)
 {
 
 	for (int i = 0; i < allMoves.size(); i++) {
-		int tempI = piece->getPosition().first;
-		int tempJ = piece->getPosition().second;
-		bool illegal{};
+		bool illegalMove = isIllegalMove(piece, allMoves[i].first, allMoves[i].second);
 
-		Piece* savedPiece = board[allMoves[i].first][allMoves[i].second];
-		board[allMoves[i].first][allMoves[i].second] = board[tempI][tempJ];
-		board[allMoves[i].first][allMoves[i].second]->setPosition(allMoves[i].first, allMoves[i].second);
-		board[tempI][tempJ] = nullptr;
-
-		if (inCheck().first) {
-			illegal = true;
-		}
-
-		board[tempI][tempJ] = board[allMoves[i].first][allMoves[i].second];
-		board[tempI][tempJ]->setPosition(tempI, tempJ);
-		board[allMoves[i].first][allMoves[i].second] = savedPiece;
-
-		if (board[tempI][tempJ]) {
-			board[tempI][tempJ]->setPosition(tempI, tempJ);
-		}
-
-		if (board[allMoves[i].first][allMoves[i].second]) {
-			board[allMoves[i].first][allMoves[i].second]->setPosition(allMoves[i].first, allMoves[i].second);
-		}
-
-
-		if (illegal) {
+		if (illegalMove) {
 			allMoves.erase(allMoves.begin() + i);
 			i--;
+		}
+	}
+}
+
+void Board::removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece* piece)
+{
+	if (castleAvailable(piece) == std::pair<bool, bool>({0, 0})) {
+		return;
+	}
+
+	int tempI = piece->getPosition().first;
+	int tempJ = piece->getPosition().second;
+
+	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 1 })) == allMoves.end()) {
+		if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 2 })) != allMoves.end()) {
+			allMoves.erase(std::remove(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 2 })), allMoves.end());
+		}
+	}
+
+	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 1 })) == allMoves.end()) {
+		if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 2 })) != allMoves.end()) {
+			allMoves.erase(std::remove(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 2 })), allMoves.end());
 		}
 	}
 }

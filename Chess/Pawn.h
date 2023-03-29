@@ -10,6 +10,9 @@ private:
 protected:
     bool hasMoved;
     bool needsPromotion;
+    std::pair<bool, bool> enPassant; // first - left; second right
+    int totalPawnsMoved;
+
 public:
     Pawn(bool type);
 
@@ -18,5 +21,12 @@ public:
 
     bool move(int x, int y);
     bool checkPromotion();
+
+    std::pair<bool, bool> getEnPassant();
+    void enPassantActive(bool left);
+    void enPassantInactive();
+
+    void setTotalPawnsMoved(int totalPawnsMoved);
+    int getTotalPawnsMoved();
 };
 

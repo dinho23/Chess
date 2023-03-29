@@ -15,6 +15,8 @@ protected:
 	Player white;
 	Player black;
 	bool whitesTurn;
+	int pawnMoves;
+	bool lastMovePawn;
 
 public:
 	Board();

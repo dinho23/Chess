@@ -4,7 +4,9 @@
 Board::Board()
 	: white(1),
 	  black(0),
-	  whitesTurn{true}
+	  whitesTurn{true},
+	  pawnMoves { 0 },
+	  lastMovePawn { false }
 {
 	board.resize(8);
 
@@ -93,8 +95,9 @@ void Board::takeInput()
 				std::cout << "\n\nNo available moves for this piece\n";
 			}
 			else {
+				print();
 
-				std::cout << "Available positions: ";
+				std::cout << "\nAvailable positions: ";
 				for (int i = 0; i < availableMovesForPiece.size(); i++) {
 					std::cout << static_cast<char>('A' + availableMovesForPiece.at(i).second) << availableMovesForPiece.at(i).first + 1;
 					if (i != availableMovesForPiece.size() - 1) {
@@ -106,8 +109,12 @@ void Board::takeInput()
 				}
 
 				while (true) {
+					std::cout << "\nTIP: Enter q to chose another piece\n";
 					std::cout << "Enter new position:";
 					std::cin >> input;
+					if (input[0] == 'q' || input[0] == 'Q') {
+						break;
+					}
 					while (!checkInput(input)) {
 						std::cout << "Please enter valid input: ";
 						std::cin >> input;
@@ -122,7 +129,9 @@ void Board::takeInput()
 						break;
 					}
 				}
-				whitesTurn = !whitesTurn;
+				if (input[0] != 'q' && input[0] != 'Q') {
+					whitesTurn = !whitesTurn;
+				}
 			}
 		}
 		else {
@@ -145,7 +154,6 @@ void Board::takeInput()
 		std::cout << "Stalemate! -_-\n";
 	}
 }
-
 
 bool Board::checkInput(std::string& input) {
 	if (input.size() != 2)
@@ -196,12 +204,49 @@ void Board::movePiece(int iOld, int jOld, int i, int j)
 	board[i][j] = board[iOld][jOld];
 	board[i][j]->setPosition(i, j);
 
+	if (dynamic_cast<Pawn*>(board[i][j])) {
+
+		if (dynamic_cast<Pawn*>(board[i][j])->getEnPassant().first || dynamic_cast<Pawn*>(board[i][j])->getEnPassant().second) {
+			dynamic_cast<Pawn*>(board[i][j])->enPassantInactive();
+
+			if (j != jOld) {
+				board[iOld][j] = nullptr;
+			}
+
+		}
+
+		pawnMoves++;
+		lastMovePawn = true;
+	}
+	else {
+		lastMovePawn = false;
+	}
+
 	if (dynamic_cast<Pawn*>(board[i][j]) && !dynamic_cast<Pawn*>(board[i][j])->getHasMoved()) {
 		dynamic_cast<Pawn*>(board[i][j])->setHasMovedTrue();
+
+		if (abs(iOld - i) == 2) {
+			if (j+1 < 8 && board[i][j + 1]) {
+				if (typeid(*board[i][j + 1]) == typeid(Pawn)) {
+					dynamic_cast<Pawn*>(board[i][j + 1])->enPassantActive(1);
+					dynamic_cast<Pawn*>(board[i][j + 1])->setTotalPawnsMoved(pawnMoves);
+				}
+			}
+			if (j - 1 >= 0 && board[i][j - 1]) {
+				if (typeid(*board[i][j - 1]) == typeid(Pawn)) {
+					dynamic_cast<Pawn*>(board[i][j - 1])->enPassantActive(0);
+					dynamic_cast<Pawn*>(board[i][j - 1])->setTotalPawnsMoved(pawnMoves);
+				}
+			}
+		}
 	}
+
 	if (dynamic_cast<Pawn*>(board[i][j]) && dynamic_cast<Pawn*>(board[i][j])->checkPromotion()) {
 		promotePawn(board[i][j]);
 	}
+
+	
+
 	if (dynamic_cast<Rook*>(board[i][j]) && !dynamic_cast<Rook*>(board[i][j])->rookHasMoved()) {
 		dynamic_cast<Rook*>(board[i][j])->setRookHasMoved();
 	}
@@ -280,6 +325,18 @@ std::vector<std::pair<int, int>> Board::whitePawnMoves(Piece* piece) {
 		allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second - 1 });
 	}
 
+	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
+		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+			allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second - 1 });
+		}
+	}
+
+	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().second) {
+		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+			allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second + 1 });
+		}
+	}
+
 	return allMoves;
 }
 
@@ -301,6 +358,18 @@ std::vector<std::pair<int, int>> Board::blackPawnMoves(Piece* piece) {
 		board[piece->getPosition().first - 1][piece->getPosition().second - 1] &&
 		board[piece->getPosition().first - 1][piece->getPosition().second - 1]->getType() != piece->getType()) {
 		allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second - 1 });
+	}
+
+	if (dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
+		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+			allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second - 1 });
+		}
+	}
+
+	if (dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().second) {
+		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+			allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second + 1 });
+		}
 	}
 
 	return allMoves;

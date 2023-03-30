@@ -66,96 +66,70 @@ void Board::takeInput()
 
 	while (!gameOver()) {
 		print();
-
 		if (inCheck().first) {
-			if (whitesTurn) {
-				std::cout << "White is in check!!!!!\n";
-			}
-			else {
-				std::cout << "Black is in check!!!!!\n";
-			}
+			printCheck();
 		}
-
-		if (whitesTurn) {
-			std::cout << "White's turn.\n";
-		}
-		else {
-			std::cout << "Black's turn.\n";
-		}
+		printTurn();
 
 		std::cout << "Enter the position of the piece that you want to move(ex: d2): ";
 		std::cin >> input;
-		if (checkInput(input) && checkCorrectPiece(input)) {
-			int iOld = input.at(1) - '0' - 1;
-			int jOld = toupper(input.at(0)) - 'A';
 
-			std::vector<std::pair<int, int>> availableMovesForPiece{ availableMoves(board[iOld][jOld]) };
+		while (!checkInput(input) || !checkCorrectPiece(input)) {
+			std::cout << "Please enter a valid position!\n";
+			std::cout << "Enter position:";
+			std::cin >> input;
+		}
 
-			if (availableMovesForPiece.size() == 0) {
-				std::cout << "\n\nNo available moves for this piece\n";
-			}
-			else {
-				print();
+		int iOld = input.at(1) - '0' - 1;
+		int jOld = toupper(input.at(0)) - 'A';
 
-				std::cout << "\nAvailable positions: ";
-				for (int i = 0; i < availableMovesForPiece.size(); i++) {
-					std::cout << static_cast<char>('A' + availableMovesForPiece.at(i).second) << availableMovesForPiece.at(i).first + 1;
-					if (i != availableMovesForPiece.size() - 1) {
-						std::cout << ", ";
-					}
-					else {
-						std::cout << "\n";
-					}
-				}
+		std::vector<std::pair<int, int>> availableMovesForPiece{ availableMoves(board[iOld][jOld]) };
 
-				while (true) {
-					std::cout << "\nTIP: Enter q to chose another piece\n";
-					std::cout << "Enter new position:";
-					std::cin >> input;
-					if (input[0] == 'q' || input[0] == 'Q') {
-						break;
-					}
-					while (!checkInput(input)) {
-						std::cout << "Please enter valid input: ";
-						std::cin >> input;
-					}
-
-					int iNew = input.at(1) - '0' - 1;
-					int jNew = toupper(input.at(0)) - 'A';
-
-					std::pair<int, int> isValidMove{ iNew, jNew };
-					if (std::find(availableMovesForPiece.begin(), availableMovesForPiece.end(), isValidMove) != availableMovesForPiece.end()) {
-						movePiece(iOld, jOld, iNew, jNew);
-						break;
-					}
-				}
-				if (input[0] != 'q' && input[0] != 'Q') {
-					whitesTurn = !whitesTurn;
-				}
-			}
+		if (availableMovesForPiece.size() == 0) {
+			std::cout << "\n\nNo available moves for this piece\n";
 		}
 		else {
-			std::cout << "Please enter a valid position!\n";
-		}
+			print();
 
+			showAvailableMoves(availableMovesForPiece);
+
+			while (true) {
+				std::cout << "\nTIP: Enter q to chose another piece\n";
+				std::cout << "Enter new position:";
+				std::cin >> input;
+				if (input[0] == 'q' || input[0] == 'Q') {
+					break;
+				}
+				while (!checkInput(input)) {
+					std::cout << "Please enter valid input: ";
+					std::cin >> input;
+				}
+
+				int iNew = input.at(1) - '0' - 1;
+				int jNew = toupper(input.at(0)) - 'A';
+
+				std::pair<int, int> isValidMove{ iNew, jNew };
+				if (std::find(availableMovesForPiece.begin(), availableMovesForPiece.end(), isValidMove) != availableMovesForPiece.end()) {
+					movePiece(iOld, jOld, iNew, jNew);
+					break;
+				}
+			}
+			if (input[0] != 'q' && input[0] != 'Q') {
+				whitesTurn = !whitesTurn;
+			}
+		}
 	}
 
 	print();
 	if (inCheck().first) {
-		std::cout << "Checkmate!!!\n";
-		if (inCheck().second) {
-			std::cout << "Black has won!\n";
-		}
-		else {
-			std::cout << "White has won!\n";
-		}
+		printCheckMate();
 	}
 	else {
 		std::cout << "Stalemate! -_-\n";
 	}
 }
 
-bool Board::checkInput(std::string& input) {
+bool Board::checkInput(std::string& input) const {
 	if (input.size() != 2)
 		return false;
 
@@ -172,7 +146,7 @@ bool Board::checkInput(std::string& input) {
 	return true;
 }
 
-bool Board::checkCorrectPiece(std::string& input)
+bool Board::checkCorrectPiece(const std::string& input)
 {
 	int i = input.at(1) - '0' - 1;
 	int j = toupper(input.at(0)) - 'A';
@@ -180,26 +154,10 @@ bool Board::checkCorrectPiece(std::string& input)
 	if (!board[i][j])
 		return false;
 
-	
-	if (whitesTurn) {
-		for (const auto &piece : white.getPieces()) {
-			if (piece == board.at(i).at(j)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	else {
-		for (const auto& piece : black.getPieces()) {
-			if (piece == board.at(i).at(j)) {
-				return true;
-			}
-		}
-		return false;
-	}
+	return board[i][j]->getType() == whitesTurn;
 }
 
-void Board::movePiece(int iOld, int jOld, int i, int j)
+void Board::movePiece(const int iOld, const int jOld, const int i, const int j)
 {
 	board[i][j] = board[iOld][jOld];
 	board[i][j]->setPosition(i, j);
@@ -305,80 +263,83 @@ std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
 	return availableMoves;
 }
 
-std::vector<std::pair<int, int>> Board::whitePawnMoves(Piece* piece) {
+std::vector<std::pair<int, int>> Board::whitePawnMoves(Piece* piece) const {
 	std::vector<std::pair<int, int>> allMoves{};
+	int pawnI = piece->getPosition().first;
+	int pawnJ = piece->getPosition().second;
 
-	if (piece->getPosition().first + 1 < 8 && !board[piece->getPosition().first+1][piece->getPosition().second]) {
-		allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second });
-		if (!dynamic_cast<Pawn*>(piece)->getHasMoved() && piece->getPosition().first + 2 < 8 && !board[piece->getPosition().first + 2][piece->getPosition().second]) {
-			allMoves.push_back({ piece->getPosition().first + 2, piece->getPosition().second });
+	int minJ = pawnJ - 1 > 0 ? pawnJ - 1 : 0;
+	int maxJ = pawnJ + 1 < 8 ? pawnJ + 1 : 7;
+
+	for (int j = minJ; j <= maxJ; j++) {
+		if (j == pawnJ) {
+			if (!board[pawnI + 1][j]) {
+				allMoves.push_back({ pawnI + 1, j });
+				if (!dynamic_cast<Pawn*>(piece)->getHasMoved() && !board[pawnI + 2][j]) {
+					allMoves.push_back({ pawnI + 2, j });
+				}
+			}
+		}
+		else {
+			if (board[pawnI + 1][j] && board[pawnI + 1][j]->getType() != piece->getType()) {
+				allMoves.push_back({ pawnI + 1,j });
+			}
 		}
 	}
-	if (piece->getPosition().first + 1 < 8 && piece->getPosition().second + 1 < 8 && 
-		board[piece->getPosition().first + 1][piece->getPosition().second + 1] && 
-		board[piece->getPosition().first + 1][piece->getPosition().second + 1]->getType() != piece->getType()) {
-		allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second + 1 });
-	}
-	if (piece->getPosition().first + 1 < 8 && piece->getPosition().second - 1 >= 0 && 
-		board[piece->getPosition().first + 1][piece->getPosition().second - 1] &&
-		board[piece->getPosition().first + 1][piece->getPosition().second - 1]->getType() != piece->getType()) {
-		allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second - 1 });
-	}
 
-	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
-		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
-			allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second - 1 });
+	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+		if (dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
+			allMoves.push_back({ pawnI + 1, pawnJ - 1 });
 		}
-	}
-
-	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().second) {
-		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
-			allMoves.push_back({ piece->getPosition().first + 1, piece->getPosition().second + 1 });
+		else {
+			allMoves.push_back({ pawnI + 1, pawnJ + 1 });
 		}
 	}
 
 	return allMoves;
 }
 
-std::vector<std::pair<int, int>> Board::blackPawnMoves(Piece* piece) {
+std::vector<std::pair<int, int>> Board::blackPawnMoves(Piece* piece) const {
 	std::vector<std::pair<int, int>> allMoves{};
+	int pawnI = piece->getPosition().first;
+	int pawnJ = piece->getPosition().second;
 
-	if (piece->getPosition().first - 1 >= 0 && !board[piece->getPosition().first - 1][piece->getPosition().second]) {
-		allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second });
-		if (!dynamic_cast<Pawn*>(piece)->getHasMoved() && piece->getPosition().first - 2 >= 0 && !board[piece->getPosition().first - 2][piece->getPosition().second]) {
-			allMoves.push_back({ piece->getPosition().first - 2, piece->getPosition().second });
+	int minJ = pawnJ - 1 > 0 ? pawnJ - 1 : 0;
+	int maxJ = pawnJ + 1 < 8 ? pawnJ + 1 : 7;
+
+	for (int j = minJ; j <= maxJ; j++) {
+		if (j == pawnJ) {
+			if (!board[pawnI - 1][j]) {
+				allMoves.push_back({ pawnI - 1, j });
+				if (!dynamic_cast<Pawn*>(piece)->getHasMoved() && !board[pawnI - 2][j]) {
+					allMoves.push_back({ pawnI - 2, j });
+				}
+			}
+		}
+		else {
+			if (board[pawnI - 1][j] && board[pawnI - 1][j]->getType() != piece->getType()) {
+				allMoves.push_back({ pawnI - 1,j });
+			}
 		}
 	}
-	if (piece->getPosition().first - 1 >= 0 && piece->getPosition().second + 1 < 8 && 
-		board[piece->getPosition().first - 1][piece->getPosition().second + 1] &&
-		board[piece->getPosition().first - 1][piece->getPosition().second + 1]->getType() != piece->getType()) {
-		allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second + 1 });
-	}
-	if (piece->getPosition().first - 1 >= 0 && piece->getPosition().second - 1 >= 0 && 
-		board[piece->getPosition().first - 1][piece->getPosition().second - 1] &&
-		board[piece->getPosition().first - 1][piece->getPosition().second - 1]->getType() != piece->getType()) {
-		allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second - 1 });
-	}
 
-	if (dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
-		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
-			allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second - 1 });
+	if (lastMovePawn && dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
+		if (dynamic_cast<Pawn*>(piece)->getEnPassant().first) {
+			allMoves.push_back({ pawnI - 1, pawnJ - 1 });
 		}
-	}
-
-	if (dynamic_cast<Pawn*>(piece) && dynamic_cast<Pawn*>(piece)->getEnPassant().second) {
-		if (dynamic_cast<Pawn*>(piece)->getTotalPawnsMoved() == pawnMoves) {
-			allMoves.push_back({ piece->getPosition().first - 1, piece->getPosition().second + 1 });
+		else {
+			allMoves.push_back({ pawnI - 1, pawnJ + 1 });
 		}
 	}
 
 	return allMoves;
 }
 
-std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece)
+std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> availableMoves{};
-
+	
+	//Vertical UP
 	for (int i = piece->getPosition().first + 1; i < 8; i++) {
 		if (!board[i][piece->getPosition().second]) {
 			availableMoves.push_back({ i, piece->getPosition().second });
@@ -392,6 +353,7 @@ std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece)
 		}
 	}
 
+	//Vertical DOWN
 	for (int i = piece->getPosition().first - 1; i >= 0 ; i--) {
 		if (!board[i][piece->getPosition().second]) {
 			availableMoves.push_back({ i, piece->getPosition().second });
@@ -405,6 +367,7 @@ std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece)
 		}
 	}
 
+	//Horizontal RIGHT
 	for (int j = piece->getPosition().second + 1; j < 8; j++) {
 		if (!board[piece->getPosition().first][j]) {
 			availableMoves.push_back({ piece->getPosition().first, j });
@@ -418,6 +381,7 @@ std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece)
 		}
 	}
 
+	//Horizontal LEFT
 	for (int j = piece->getPosition().second - 1; j >= 0; j--) {
 		if (!board[piece->getPosition().first][j]) {
 			availableMoves.push_back({ piece->getPosition().first, j });
@@ -434,60 +398,24 @@ std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece)
 	return availableMoves;
 }
 
-std::vector<std::pair<int, int>> Board::knightMoves(Piece* piece)
+std::vector<std::pair<int, int>> Board::knightMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> availableMoves{};
 
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			Piece* temp = nullptr;
-			if (i == piece->getPosition().first - 2 && j == piece->getPosition().second + 1) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first - 2 && j == piece->getPosition().second - 1) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first + 2 && j == piece->getPosition().second + 1) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first + 2 && j == piece->getPosition().second - 1) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first - 1 && j == piece->getPosition().second + 2) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first + 1 && j == piece->getPosition().second + 2) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
-			else if (i == piece->getPosition().first - 1 && j == piece->getPosition().second - 2) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
-				}
-			}
+			Piece* temp = board[i][j];
 
-			else if (i == piece->getPosition().first + 1 && j == piece->getPosition().second - 2) {
-				temp = board[i][j];
-				if (!temp || temp->getType() != piece->getType()) {
-					availableMoves.push_back({ i, j });
+			if (!temp || temp->getType() != piece->getType()) {
+				if (abs(piece->getPosition().first - i) == 1) {
+					if (abs(piece->getPosition().second - j) == 2) {
+						availableMoves.push_back({ i, j });
+					}
+				}
+				else if (abs(piece->getPosition().first - i) == 2) {
+					if (abs(piece->getPosition().second - j) == 1) {
+						availableMoves.push_back({ i, j });
+					}
 				}
 			}
 		}
@@ -496,7 +424,7 @@ std::vector<std::pair<int, int>> Board::knightMoves(Piece* piece)
 	return availableMoves;
 }
 
-std::vector<std::pair<int, int>> Board::bishopMoves(Piece* piece)
+std::vector<std::pair<int, int>> Board::bishopMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> availableMoves{};
 
@@ -569,7 +497,7 @@ std::vector<std::pair<int, int>> Board::bishopMoves(Piece* piece)
 	return availableMoves;
 }
 
-std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece)
+std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> allMoves{};
 
@@ -599,7 +527,7 @@ std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece)
 	return allMoves;
 }
 
-std::vector<std::pair<int, int>> Board::pawnChecks(Piece* piece)
+std::vector<std::pair<int, int>> Board::pawnChecks(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> pawnChecks;
 
@@ -694,7 +622,7 @@ void Board::removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece
 	}
 }
 
-std::pair<int, int> Board::inCheck()
+std::pair<int, int> Board::inCheck() const
 {
 	std::vector<std::pair<int, int>> availableChecks{};
 	bool foundCheck{}, done{};
@@ -752,7 +680,7 @@ std::pair<int, int> Board::inCheck()
 	}
 }
 
-bool Board::kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, const std::string& type)
+bool Board::kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, const std::string& type) const
 {
 	bool check{};
 
@@ -812,7 +740,7 @@ bool Board::insufficientMaterial()
 	return true;
 }
 
-std::pair<bool, bool> Board::castleAvailable(Piece* piece)
+std::pair<bool, bool> Board::castleAvailable(Piece* piece) const
 {
 	if (!dynamic_cast<King*>(piece)->kingCastleAvailable()) {
 		return std::pair<bool, bool>({ 0, 0 });
@@ -916,7 +844,7 @@ void Board::promotePawn(Piece* piece)
 	piece->setPosition(i, j);
 }
 
-void Board::placePiece(Piece* piece, int i, int j)
+void Board::placePiece(Piece* piece, const int i, const int j)
 {
 	if (piece->getType() == 1) {
 		white.insertPiece(piece);
@@ -926,6 +854,51 @@ void Board::placePiece(Piece* piece, int i, int j)
 	}
 	board[i][j] = piece;
 	board[i][j]->setPosition(i, j);
+}
+
+void Board::showAvailableMoves(const std::vector<std::pair<int, int>>& moves) const
+{
+	std::cout << "\nAvailable positions: ";
+	for (int i = 0; i < moves.size(); i++) {
+		std::cout << static_cast<char>('A' + moves.at(i).second) << moves.at(i).first + 1;
+		if (i != moves.size() - 1) {
+			std::cout << ", ";
+		}
+		else {
+			std::cout << "\n";
+		}
+	}
+}
+
+void Board::printCheck() const
+{
+	if (whitesTurn) {
+		std::cout << "White is in check!!!!!\n";
+	}
+	else {
+		std::cout << "Black is in check!!!!!\n";
+	}
+}
+
+void Board::printTurn() const
+{
+	if (whitesTurn) {
+		std::cout << "White's turn.\n";
+	}
+	else {
+		std::cout << "Black's turn.\n";
+	}
+}
+
+void Board::printCheckMate() const
+{
+	std::cout << "Checkmate!!!\n";
+	if (inCheck().second) {
+		std::cout << "Black has won!\n";
+	}
+	else {
+		std::cout << "White has won!\n";
+	}
 }
 
 void Board::print()
@@ -940,19 +913,13 @@ void Board::print()
 		std::cout << file+1 << "  ";
 		for (int rank = 0; rank < 8; rank++) {
 			if (board.at(file).at(rank)) {
-				bool whitePiece{ false };
-				for (const auto& piece : white.getPieces()) {
-					if (piece == board.at(file).at(rank)) {
-						whitePiece = true;
-					}
-				}
-
-				if (whitePiece) {
-						std::cout << "w" << board.at(file).at(rank)->getShortName() << "\t";
+				if (board.at(file).at(rank)->getType()) {
+					std::cout << "w";
 				}
 				else {
-					std::cout << "b" << board.at(file).at(rank)->getShortName() << "\t";
+					std::cout << "b";
 				}
+				std::cout << board.at(file).at(rank)->getShortName() << "\t";
 			}
 			else {
 				std::cout << "  \t";
@@ -961,28 +928,3 @@ void Board::print()
 		std::cout << "\n\n\n";
 	}
 }
-
-std::ostream& operator<<(std::ostream& output, const Board& board)
-{
-	output << "   ";
-	for (char file = 'A'; file < 'I'; file++) {
-		output << file << "\t";
-	}
-	output << "\n";
-
-	for (size_t file = 0; file < 8; file++) {
-		output << 8 - file << "  ";
-		for (size_t rank = 0; rank < 8; rank++) {
-			if (board.board.at(file).at(rank)) {
-				output << board.board.at(file).at(rank)->getName() << "\t";
-			}
-			else {
-				output << "  ";
-			}
-		}
-		output << "\n\n\n";
-	}
-
-	return output;
-}
-

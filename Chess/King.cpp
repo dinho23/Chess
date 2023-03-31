@@ -16,7 +16,7 @@ void King::setCastleUnavailable()
 	hasMoved = true;
 }
 
-bool King::move(int x, int y)
+void King::abstractClass()
 {
-	return false;
+	return;
 }

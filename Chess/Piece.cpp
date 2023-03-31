@@ -8,7 +8,7 @@ Piece::Piece(const std::string& name, const bool& type)
 {
 }
 
-void Piece::setPosition(int x, int y)
+void Piece::setPosition(const int& x, const int& y)
 {
 	posX = x;
 	posY = y;

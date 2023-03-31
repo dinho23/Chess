@@ -75,3 +75,8 @@ int Pawn::getTotalPawnsMoved()
 {
 	return totalPawnsMoved;
 }
+
+void Pawn::abstractClass()
+{
+	return;
+}

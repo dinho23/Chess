@@ -5,7 +5,7 @@ Queen::Queen(bool type)
 {
 }
 
-bool Queen::move(int x, int y)
+void Queen::abstractClass()
 {
-	return false;
+	return;
 }

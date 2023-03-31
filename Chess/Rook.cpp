@@ -15,15 +15,7 @@ void Rook::setRookHasMoved()
 	hasMoved = true;
 }
 
-bool Rook::move(int x, int y)
+void Rook::abstractClass()
 {
-	if (x == posX && y == posY)
-		return false;
-
-	if (x != posX && y != posY)
-		return false;
-
-	posX = x;
-	posY = y;
-	return true;
+	return;
 }

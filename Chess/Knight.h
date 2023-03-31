@@ -11,6 +11,5 @@ private:
 public:
     Knight(bool type);
 
-    bool move(int x, int y);
+    void abstractClass();
 };
-

@@ -5,7 +5,7 @@ Knight::Knight(bool type)
 {
 }
 
-bool Knight::move(int x, int y)
+void Knight::abstractClass()
 {
-	return false;
+	return;
 }

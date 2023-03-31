@@ -17,6 +17,5 @@ public:
     bool kingCastleAvailable();
     void setCastleUnavailable();
 
-    bool move(int x, int y);
+    void abstractClass();
 };
-

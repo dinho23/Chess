@@ -6,7 +6,7 @@
 #include "Board.h"
 
 void intro(std::string& input) {
-    std::cout << "Would you like to play a game? y/n\n";
+    std::cout << "Would you like to play a game? (y/n):";
     std::cin >> input;
 
     for (auto& c : input) {
@@ -28,7 +28,7 @@ int main()
 
     while (isValid(input)) {
         Board chess;
-        chess.takeInput();
+        chess.startGame();
         intro(input);
     }
     std::cout << ":(\n";

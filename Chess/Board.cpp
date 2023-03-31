@@ -6,7 +6,9 @@ Board::Board()
 	  black(0),
 	  whitesTurn{true},
 	  pawnMoves { 0 },
-	  lastMovePawn { false }
+	  lastMovePawn { false },
+	  drawAccepted { false },
+	  drawProposed { false }
 {
 	board.resize(8);
 
@@ -60,24 +62,44 @@ void Board::setPiecePosition()
 	}
 }
 
-void Board::takeInput()
+void Board::startGame()
 {
 	std::string input{};
 
 	while (!gameOver()) {
-		print();
+		printBoard();
+
 		if (inCheck().first) {
 			printCheck();
 		}
-		printTurn();
 
-		std::cout << "Enter the position of the piece that you want to move(ex: d2): ";
-		std::cin >> input;
+		takePieceToMove(input);
 
 		while (!checkInput(input) || !checkCorrectPiece(input)) {
-			std::cout << "Please enter a valid position!\n";
-			std::cout << "Enter position:";
-			std::cin >> input;
+			if (proposeDraw(input)) {
+				if (!drawProposed) {
+					proposeDraw(input);
+					if (drawAccepted) {
+						break;
+					}
+					else {
+						takePieceToMove(input);
+					}
+				}
+				else {
+					if (drawAccepted) {
+						break;
+					}
+					takePieceToMove(input);
+				}
+			}
+			else {
+				takePieceToMove(input);
+			}
+		}
+
+		if (drawAccepted) {
+			break;
 		}
 
 		int iOld = input.at(1) - '0' - 1;
@@ -89,40 +111,18 @@ void Board::takeInput()
 			std::cout << "\n\nNo available moves for this piece\n";
 		}
 		else {
-			print();
-
+			printBoard();
 			showAvailableMoves(availableMovesForPiece);
-
-			while (true) {
-				std::cout << "\nTIP: Enter q to chose another piece\n";
-				std::cout << "Enter new position:";
-				std::cin >> input;
-				if (input[0] == 'q' || input[0] == 'Q') {
-					break;
-				}
-				while (!checkInput(input)) {
-					std::cout << "Please enter valid input: ";
-					std::cin >> input;
-				}
-
-				int iNew = input.at(1) - '0' - 1;
-				int jNew = toupper(input.at(0)) - 'A';
-
-				std::pair<int, int> isValidMove{ iNew, jNew };
-				if (std::find(availableMovesForPiece.begin(), availableMovesForPiece.end(), isValidMove) != availableMovesForPiece.end()) {
-					movePiece(iOld, jOld, iNew, jNew);
-					break;
-				}
-			}
-			if (input[0] != 'q' && input[0] != 'Q') {
-				whitesTurn = !whitesTurn;
-			}
+			pickNewPiecePosition(input, availableMovesForPiece, iOld, jOld);
 		}
 	}
 
-	print();
+	printBoard();
 	if (inCheck().first) {
 		printCheckMate();
+	}
+	else if (drawAccepted) {
+		std::cout << "Both players accepted a draw.\n";
 	}
 	else {
 		std::cout << "Stalemate! -_-\n";
@@ -157,20 +157,18 @@ bool Board::checkCorrectPiece(const std::string& input)
 	return board[i][j]->getType() == whitesTurn;
 }
 
-void Board::movePiece(const int iOld, const int jOld, const int i, const int j)
+void Board::movePiece(const int& iOld, const int& jOld, const int& i, const int& j)
 {
 	board[i][j] = board[iOld][jOld];
 	board[i][j]->setPosition(i, j);
 
 	if (dynamic_cast<Pawn*>(board[i][j])) {
-
 		if (dynamic_cast<Pawn*>(board[i][j])->getEnPassant().first || dynamic_cast<Pawn*>(board[i][j])->getEnPassant().second) {
 			dynamic_cast<Pawn*>(board[i][j])->enPassantInactive();
 
 			if (j != jOld) {
 				board[iOld][j] = nullptr;
 			}
-
 		}
 
 		pawnMoves++;
@@ -203,11 +201,10 @@ void Board::movePiece(const int iOld, const int jOld, const int i, const int j)
 		promotePawn(board[i][j]);
 	}
 
-	
-
 	if (dynamic_cast<Rook*>(board[i][j]) && !dynamic_cast<Rook*>(board[i][j])->rookHasMoved()) {
 		dynamic_cast<Rook*>(board[i][j])->setRookHasMoved();
 	}
+
 	if (dynamic_cast<King*>(board[i][j]) && dynamic_cast<King*>(board[i][j])->kingCastleAvailable()) {
 		if (abs(j - jOld) == 2) {
 			if (j > jOld) {
@@ -225,7 +222,6 @@ void Board::movePiece(const int iOld, const int jOld, const int i, const int j)
 	}
 	
 	board[iOld][jOld] = nullptr;
-	
 }
 
 std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
@@ -257,9 +253,11 @@ std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
 	}
 
 	removeIlegalMoves(availableMoves, piece);
+
 	if (typeid(*piece) == typeid(King)) {
 		removeIlegalCastle(availableMoves, piece);
 	}
+
 	return availableMoves;
 }
 
@@ -557,7 +555,7 @@ std::vector<std::pair<int, int>> Board::pawnChecks(Piece* piece) const
 	return pawnChecks;
 }
 
-bool Board::isIllegalMove(Piece* piece, int newI, int newJ)
+bool Board::isIllegalMove(Piece* piece, const int& newI, const int& newJ)
 {
 	int tempI = piece->getPosition().first;
 	int tempJ = piece->getPosition().second;
@@ -685,12 +683,13 @@ bool Board::kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, cons
 	bool check{};
 
 	for (int i = 0; i < dangerousSquares.size(); i++) {
-		if (board[dangerousSquares[i].first][dangerousSquares[i].second] && 
-			board[dangerousSquares[i].first][dangerousSquares[i].second]->getType() != whitesTurn &&
-			(board[dangerousSquares[i].first][dangerousSquares[i].second]->getName() == type ||
-			 (board[dangerousSquares[i].first][dangerousSquares[i].second]->getName() == "Queen" &&
-			 type != "Knight"))) {
-			check = true;
+		if (board[dangerousSquares[i].first][dangerousSquares[i].second] &&
+			board[dangerousSquares[i].first][dangerousSquares[i].second]->getType() != whitesTurn) {
+			if (board[dangerousSquares[i].first][dangerousSquares[i].second]->getName() == type ||
+				(board[dangerousSquares[i].first][dangerousSquares[i].second]->getName() == "Queen" &&
+					type != "Knight")) {
+				check = true;
+			}
 		}
 	}
 
@@ -698,7 +697,7 @@ bool Board::kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, cons
 }
 
 bool Board::gameOver() {
-	if (insufficientMaterial()) {
+	if (insufficientMaterial() || drawAccepted) {
 		return true;
 	}
 
@@ -710,7 +709,7 @@ bool Board::gameOver() {
 	}
 }
 
-bool Board::insufficientMaterial()
+bool Board::insufficientMaterial() const
 {
 	int whiteMaterial{}, blackMaterial{};
 
@@ -870,13 +869,95 @@ void Board::showAvailableMoves(const std::vector<std::pair<int, int>>& moves) co
 	}
 }
 
+bool Board::proposeDraw(std::string input)
+{
+	if (input.size() != 4)
+		return false;
+
+	for (auto& c : input) {
+		c = toupper(c);
+	}
+
+	if (input != "DRAW")
+		return false;
+
+	if (drawProposed) {
+		std::cout << "You already proposed a draw this turn! Try again next turn.\n";
+		return false;
+	}
+
+	drawProposed = true;
+
+	whitesTurn ? std::cout << "White " : std::cout << "Black ";
+	std::cout << "would like to propose a draw. Enter y to accept, n to refuse: ";
+	std::cin >> input;
+
+	if (toupper(input[0]) == 'Y')
+		drawAccepted = 1;
+	else
+		std::cout << "Draw offer declined!\n";
+
+	return true;
+}
+
+void Board::takePieceToMove(std::string& input) const
+{
+	printTurn();
+	std::cout << "Enter the position of the piece that you want to move(ex: D2): ";
+	std::cin >> input;
+}
+
+void Board::pickNewPiecePosition(std::string& input,const std::vector<std::pair<int, int>>& allMoves, const int& iOld, const int& jOld)
+{
+	while (true) {
+		printTip();
+		std::cin >> input;
+
+		if (changePiece(input[0])) {
+			break;
+		}
+
+		while (!checkInput(input)) {
+			printTip();
+			std::cin >> input;
+
+			if (changePiece(input[0])) {
+				return;
+			}
+		}
+
+		int iNew = input.at(1) - '0' - 1;
+		int jNew = toupper(input.at(0)) - 'A';
+
+		std::pair<int, int> isValidMove{ iNew, jNew };
+
+		if (std::find(allMoves.begin(), allMoves.end(), isValidMove) != allMoves.end()) {
+			movePiece(iOld, jOld, iNew, jNew);
+			break;
+		}
+		else {
+			std::cout << "Please enter a valid position.\n";
+		}
+	}
+
+	if (input[0] != 'q' && input[0] != 'Q') {
+		whitesTurn = !whitesTurn;
+		drawProposed = false;
+	}
+}
+
+bool Board::changePiece(const char& c) const
+{
+	return c == 'q' || c == 'Q';
+}
+
 void Board::printCheck() const
 {
 	if (whitesTurn) {
-		std::cout << "White is in check!!!!!\n";
+		std::cout << "White is in check!!!\n";
 	}
 	else {
-		std::cout << "Black is in check!!!!!\n";
+		std::cout << "Black is in check!!!\n";
 	}
 }
 
@@ -901,7 +982,13 @@ void Board::printCheckMate() const
 	}
 }
 
-void Board::print()
+void Board::printTip() const
+{
+	std::cout << "TIP: Enter q to chose another piece\n";
+	std::cout << "Enter new position for this piece:";
+}
+
+void Board::printBoard() const
 {
 	std::cout << "   ";
 	for (char file = 'A'; file < 'I'; file++) {

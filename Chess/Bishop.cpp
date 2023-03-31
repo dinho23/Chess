@@ -5,7 +5,7 @@ Bishop::Bishop(bool type)
 {
 }
 
-bool Bishop::move(int x, int y)
+void Bishop::abstractClass()
 {
-	return false;
+	return;
 }

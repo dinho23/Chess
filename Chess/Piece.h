@@ -15,13 +15,15 @@ protected:
 public:
 	Piece(const std::string &name, const bool &type);
 
-	void setPosition(int x, int y);
+	void setPosition(const int& x, const int& y);
 	std::pair<int,int> getPosition();
+
 	std::string getName() const;
 	std::string getShortName() const;
+	
 	bool getType() const;
-	virtual bool move(int x, int y) = 0;
+	
+	virtual void abstractClass() = 0;
 
 	friend std::ostream& operator<<(std::ostream& output, const Piece& piece);
 };
-

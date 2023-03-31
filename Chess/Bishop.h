@@ -11,6 +11,5 @@ private:
 public:
     Bishop(bool type);
 
-    bool move(int x, int y);
+    void abstractClass();
 };
-

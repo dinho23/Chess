@@ -17,6 +17,5 @@ public:
     bool rookHasMoved();
     void setRookHasMoved();
 
-    bool move(int x, int y);
+    void abstractClass();
 };
-

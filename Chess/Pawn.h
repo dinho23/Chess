@@ -28,5 +28,6 @@ public:
 
     void setTotalPawnsMoved(int totalPawnsMoved);
     int getTotalPawnsMoved();
-};
 
+    void abstractClass();
+};

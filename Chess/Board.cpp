@@ -783,64 +783,40 @@ void Board::promotePawn(Piece* piece)
 {
 	int i = piece->getPosition().first;
 	int j = piece->getPosition().second;
-	bool done{ false };
+
 	std::string input{};
+
 	std::cout << "Promotion!!!\nEnter the piece that you want (Queen, Rook, Bishop, Knight):";
-	do {
+	while (true) {
 		std::cin >> input;
+
 		for (auto& c : input) {
 			c = toupper(c);
 		}
+
 		if ((input.size() == 1 && input[0] == 'Q') || input == "QUEEN") {
-			if (whitesTurn) {
-				Piece* temp = new Queen(1);
-				placePiece(temp, i, j);
-			}
-			else {
-				Piece* temp = new Queen(0);
-				placePiece(temp, i, j);
-			}
-			done = true;
+			Piece* temp = new Queen(whitesTurn);
+			placePiece(temp, i, j);
+			return;
 		}
 		else if ((input.size() == 1 && input[0] == 'R') || input == "ROOK") {
-			if (whitesTurn) {
-				Piece* temp = new Rook(1);
-				placePiece(temp, i, j);
-			}
-			else {
-				Piece* temp = new Rook(0);
-				placePiece(temp, i, j);
-			}
-			done = true;
+			Piece* temp = new Rook(whitesTurn);
+			placePiece(temp, i, j);
+			return;
 		}
 		else if ((input.size() == 1 && input[0] == 'B') || input == "BISHOP") {
-			if (whitesTurn) {
-				Piece* temp = new Bishop(1);
-				placePiece(temp, i, j);
-			}
-			else {
-				Piece* temp = new Bishop(0);
-				placePiece(temp, i, j);
-			}
-			done = true;
+			Piece* temp = new Bishop(whitesTurn);
+			placePiece(temp, i, j);
+			return;
 		}
 		else if ((input.size() == 1 && input[0] == 'K') || input == "Knight") {
-			if (whitesTurn) {
-				Piece* temp = new Knight(1);
-				placePiece(temp, i, j);
-			}
-			else {
-				Piece* temp = new Knight(0);
-				placePiece(temp, i, j);
-			}
-			done = true;
+			Piece* temp = new Knight(whitesTurn);
+			placePiece(temp, i, j);
+			return;
 		}
-		if (!done) {
-			std::cout << "Please enter a valid input:";
-		}
-	} while (!done);
 
-	piece->setPosition(i, j);
+		std::cout << "Please enter a valid input:";
+	}
 }
 
 void Board::placePiece(Piece* piece, const int i, const int j)

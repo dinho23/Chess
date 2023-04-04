@@ -1,9 +1,6 @@
 #include <iostream>
 
-#include "Piece.h"
-#include "Pawn.h"
-#include "Player.h"
-#include "Board.h"
+#include "../ChessLibrary/Board.h"
 
 void intro(std::string& input) {
     std::cout << "Would you like to play a game? (y/n):";

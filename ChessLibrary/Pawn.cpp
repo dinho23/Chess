@@ -1,11 +1,13 @@
+#include "pch.h"
 #include "Pawn.h"
+
 
 Pawn::Pawn(bool type)
 	: Piece(def_name, type),
 	hasMoved{ false },
 	needsPromotion{ false },
-	enPassant { false, false },
-	totalPawnsMoved { 0 }
+	enPassant{ false, false },
+	totalPawnsMoved{ 0 }
 {
 }
 

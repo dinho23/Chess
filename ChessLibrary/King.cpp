@@ -1,8 +1,10 @@
+#include "pch.h"
 #include "King.h"
+
 
 King::King(bool type)
 	: Piece(def_name, type),
-	hasMoved {false}
+	hasMoved{ false }
 {
 }
 

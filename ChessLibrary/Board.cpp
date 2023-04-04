@@ -1,21 +1,22 @@
+#include "pch.h"
 #include "Board.h"
 
 
 Board::Board()
 	: white(1),
-	  black(0),
-	  whitesTurn{true},
-	  pawnMoves { 0 },
-	  lastMovePawn { false },
-	  drawAccepted { false },
-	  drawProposed { false }
+	black(0),
+	whitesTurn{ true },
+	pawnMoves{ 0 },
+	lastMovePawn{ false },
+	drawAccepted{ false },
+	drawProposed{ false }
 {
 	board.resize(8);
 
 	for (size_t i = 0; i < 8; i++) {
 		board.at(i).resize(8);
 	}
-	
+
 	//Populate with Pawns
 	for (size_t i = 0; i < 8; i++) {
 		board.at(1).at(i) = white.getPieces().at(i);
@@ -56,10 +57,15 @@ void Board::setPiecePosition()
 {
 	for (size_t i = 0; i < 8; i++) {
 		for (size_t j = 0; j < 8; j++) {
-			if(board[i][j])
+			if (board[i][j])
 				board.at(i).at(j)->setPosition(i, j);
 		}
 	}
+}
+
+std::vector<std::vector<Piece*>>& Board::getBoard()
+{
+	return board;
 }
 
 void Board::startGame()
@@ -182,7 +188,7 @@ void Board::movePiece(const int& iOld, const int& jOld, const int& i, const int&
 		dynamic_cast<Pawn*>(board[i][j])->setHasMovedTrue();
 
 		if (abs(iOld - i) == 2) {
-			if (j+1 < 8 && board[i][j + 1]) {
+			if (j + 1 < 8 && board[i][j + 1]) {
 				if (typeid(*board[i][j + 1]) == typeid(Pawn)) {
 					dynamic_cast<Pawn*>(board[i][j + 1])->enPassantActive(1);
 					dynamic_cast<Pawn*>(board[i][j + 1])->setTotalPawnsMoved(pawnMoves);
@@ -220,8 +226,13 @@ void Board::movePiece(const int& iOld, const int& jOld, const int& i, const int&
 		}
 		dynamic_cast<King*>(board[i][j])->setCastleUnavailable();
 	}
-	
+
 	board[iOld][jOld] = nullptr;
+}
+
+void Board::changeTurn()
+{
+	whitesTurn = !whitesTurn;
 }
 
 std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
@@ -244,7 +255,7 @@ std::vector<std::pair<int, int>> Board::availableMoves(Piece* piece)
 		availableMoves = bishopMoves(piece);
 	}
 	else if (typeid(*piece) == typeid(Queen)) {
-		availableMoves =  bishopMoves(piece);
+		availableMoves = bishopMoves(piece);
 		std::vector<std::pair<int, int>> availableRookMoves{ rookMoves(piece) };
 		availableMoves.insert(availableMoves.end(), availableRookMoves.begin(), availableRookMoves.end());
 	}
@@ -336,7 +347,7 @@ std::vector<std::pair<int, int>> Board::blackPawnMoves(Piece* piece) const {
 std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> availableMoves{};
-	
+
 	//Vertical UP
 	for (int i = piece->getPosition().first + 1; i < 8; i++) {
 		if (!board[i][piece->getPosition().second]) {
@@ -352,7 +363,7 @@ std::vector<std::pair<int, int>> Board::rookMoves(Piece* piece) const
 	}
 
 	//Vertical DOWN
-	for (int i = piece->getPosition().first - 1; i >= 0 ; i--) {
+	for (int i = piece->getPosition().first - 1; i >= 0; i--) {
 		if (!board[i][piece->getPosition().second]) {
 			availableMoves.push_back({ i, piece->getPosition().second });
 		}
@@ -426,10 +437,10 @@ std::vector<std::pair<int, int>> Board::bishopMoves(Piece* piece) const
 {
 	std::vector<std::pair<int, int>> availableMoves{};
 
-	int i{ piece->getPosition().first + 1};
-	int j{ piece->getPosition().second + 1};
+	int i{ piece->getPosition().first + 1 };
+	int j{ piece->getPosition().second + 1 };
 
-	while(i < 8 && j < 8) {
+	while (i < 8 && j < 8) {
 		if (!board[i][j]) {
 			availableMoves.push_back({ i,j });
 		}
@@ -513,7 +524,7 @@ std::vector<std::pair<int, int>> Board::kingMoves(Piece* piece) const
 				j >= piece->getPosition().second - 1 && j <= piece->getPosition().second + 1) {
 				if (!board[i][j]) {
 					allMoves.push_back({ i, j });
-				} 
+				}
 				else if (board[i][j]->getType() != piece->getType()) {
 					allMoves.push_back({ i, j });
 				}
@@ -600,7 +611,7 @@ void Board::removeIlegalMoves(std::vector<std::pair<int, int>>& allMoves, Piece*
 
 void Board::removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece* piece)
 {
-	if (castleAvailable(piece) == std::pair<bool, bool>({0, 0})) {
+	if (castleAvailable(piece) == std::pair<bool, bool>({ 0, 0 })) {
 		return;
 	}
 
@@ -634,11 +645,11 @@ std::pair<int, int> Board::inCheck() const
 				king = board[i][j];
 
 				std::vector<std::pair<int, int>> temp = rookMoves(board[i][j]);
-				
+
 				if (kingChecked(temp, "Rook")) {
 					foundCheck = true;
 				}
-				
+
 
 				temp = bishopMoves(board[i][j]);
 				if (kingChecked(temp, "Bishop")) {
@@ -671,7 +682,7 @@ std::pair<int, int> Board::inCheck() const
 	}
 
 	if (!foundCheck) {
-		return {0,0};
+		return { 0,0 };
 	}
 	else {
 		return { 1, whitesTurn };
@@ -745,7 +756,7 @@ std::pair<bool, bool> Board::castleAvailable(Piece* piece) const
 		return std::pair<bool, bool>({ 0, 0 });
 	}
 
-	bool shortCastle{true}, longCastle{true};
+	bool shortCastle{ true }, longCastle{ true };
 
 	Piece* tempRook = board[piece->getPosition().first][0];
 	if (!dynamic_cast<Rook*>(tempRook)) {
@@ -883,7 +894,7 @@ void Board::takePieceToMove(std::string& input) const
 	std::cin >> input;
 }
 
-void Board::pickNewPiecePosition(std::string& input,const std::vector<std::pair<int, int>>& allMoves, const int& iOld, const int& jOld)
+void Board::pickNewPiecePosition(std::string& input, const std::vector<std::pair<int, int>>& allMoves, const int& iOld, const int& jOld)
 {
 	while (true) {
 		printTip();
@@ -973,7 +984,7 @@ void Board::printBoard() const
 	std::cout << "\n";
 
 	for (int file = 7; file >= 0; file--) {
-		std::cout << file+1 << "  ";
+		std::cout << file + 1 << "  ";
 		for (int rank = 0; rank < 8; rank++) {
 			if (board.at(file).at(rank)) {
 				if (board.at(file).at(rank)->getType()) {

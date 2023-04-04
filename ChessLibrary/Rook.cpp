@@ -1,4 +1,6 @@
+#include "pch.h"
 #include "Rook.h"
+
 
 Rook::Rook(bool type)
 	: Piece(def_name, type)

@@ -1,7 +1,9 @@
+#include "pch.h"
 #include "Player.h"
 
+
 Player::Player(bool white)
-	: white {white}
+	: white{ white }
 {
 	pieces.resize(16);
 	for (size_t i = 0; i < 8; i++) {

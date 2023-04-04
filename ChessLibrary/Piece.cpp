@@ -1,10 +1,12 @@
+#include "pch.h"
 #include "Piece.h"
+
 
 Piece::Piece(const std::string& name, const bool& type)
 	: m_name{ name },
-	  m_type { type },
-	  posX{ 0 },
-	  posY {0}
+	m_type{ type },
+	posX{ 0 },
+	posY{ 0 }
 {
 }
 

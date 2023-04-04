@@ -25,11 +25,14 @@ public:
 
 	void setPiecePosition();
 
+	std::vector<std::vector<Piece*>>& getBoard();
+
 
 	void startGame();
 	bool checkInput(std::string& input) const;
 	bool checkCorrectPiece(const std::string& input);
 	void movePiece(const int& iOld, const int& jOld, const int& i, const int& j);
+	void changeTurn();
 
 
 	std::vector<std::pair<int, int>> availableMoves(Piece* piece);
@@ -48,17 +51,17 @@ public:
 
 
 	bool isIllegalMove(Piece* piece, const int& newI, const int& newJ);
-	void removeIlegalMoves(std::vector<std::pair<int,int>>& allMoves, Piece* piece);
+	void removeIlegalMoves(std::vector<std::pair<int, int>>& allMoves, Piece* piece);
 	void removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece* piece);
 
-	std::pair<int,int> inCheck() const;
+	std::pair<int, int> inCheck() const;
 	bool kingChecked(std::vector<std::pair<int, int>>& dangerousSquares, const std::string& type) const;
 	bool gameOver();
 	bool insufficientMaterial() const;
 
 	std::pair<bool, bool> castleAvailable(Piece* piece) const;
 
-	void promotePawn(Piece *piece);
+	void promotePawn(Piece* piece);
 	void placePiece(Piece* piece, const int i, const int j);
 
 	void showAvailableMoves(const std::vector<std::pair<int, int>>& moves) const;
@@ -75,4 +78,3 @@ public:
 	void printTip() const;
 	void printBoard() const;
 };
-

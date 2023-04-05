@@ -11,5 +11,5 @@ private:
 public:
     Knight(bool type);
 
-    void abstractClass();
+    void abstractClass() const;
 };

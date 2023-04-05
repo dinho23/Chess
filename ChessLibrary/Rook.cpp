@@ -8,7 +8,7 @@ Rook::Rook(bool type)
 {
 }
 
-bool Rook::rookHasMoved()
+bool Rook::rookHasMoved() const
 {
 	return hasMoved;
 }
@@ -18,7 +18,7 @@ void Rook::setRookHasMoved()
 	hasMoved = true;
 }
 
-void Rook::abstractClass()
+void Rook::abstractClass() const
 {
 	return;
 }

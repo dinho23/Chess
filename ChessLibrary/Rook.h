@@ -14,9 +14,9 @@ protected:
 public:
     Rook(bool type);
 
-    bool rookHasMoved();
+    bool rookHasMoved() const;
     void setRookHasMoved();
 
-    void abstractClass();
+    void abstractClass() const;
 };
 

@@ -8,7 +8,7 @@ King::King(bool type)
 {
 }
 
-bool King::kingCastleAvailable()
+bool King::kingCastleAvailable() const
 {
 	return !hasMoved;
 }
@@ -18,7 +18,7 @@ void King::setCastleUnavailable()
 	hasMoved = true;
 }
 
-void King::abstractClass()
+void King::abstractClass() const
 {
 	return;
 }

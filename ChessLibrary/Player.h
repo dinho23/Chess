@@ -23,6 +23,6 @@ public:
 
 	void insertPiece(Piece* piece);
 
-	std::vector<Piece*> getPieces();
+	std::vector<Piece*> getPieces() const;
 };
 

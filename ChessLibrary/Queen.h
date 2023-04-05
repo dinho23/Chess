@@ -11,5 +11,5 @@ private:
 public:
     Queen(bool type);
 
-    void abstractClass();
+    void abstractClass() const;
 };

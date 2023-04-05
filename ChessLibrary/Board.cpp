@@ -975,8 +975,7 @@ void Board::printTip() const
 	std::cout << "Enter new position for this piece:";
 }
 
-void Board::printBoard() const
-{
+void Board::printBoard() const {
 	std::cout << "   ";
 	for (char file = 'A'; file < 'I'; file++) {
 		std::cout << file << "\t";
@@ -988,15 +987,22 @@ void Board::printBoard() const
 		for (int rank = 0; rank < 8; rank++) {
 			if (board.at(file).at(rank)) {
 				if (board.at(file).at(rank)->getType()) {
-					std::cout << "w";
+					std::cout << "\033[0;33m";
 				}
 				else {
-					std::cout << "b";
+					std::cout << "\033[0;32m";
 				}
-				std::cout << board.at(file).at(rank)->getShortName() << "\t";
+				std::cout << board.at(file).at(rank)->getShortName() << "\033[0m\t";
 			}
 			else {
-				std::cout << "  \t";
+				if ((file + rank) % 2) {
+					std::cout << "\033[0;47m  \033[0m\t";
+					//std::cout << "\t";
+				}
+				else {
+					std::cout << "\033[0;40m  \033[0m\t";
+					//std::cout << "\t";
+				}
 			}
 		}
 		std::cout << "\n\n\n";

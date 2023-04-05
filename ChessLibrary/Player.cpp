@@ -39,7 +39,7 @@ void Player::insertPiece(Piece* piece)
 	pieces.push_back(piece);
 }
 
-std::vector<Piece*> Player::getPieces()
+std::vector<Piece*> Player::getPieces() const
 {
 	return pieces;
 }

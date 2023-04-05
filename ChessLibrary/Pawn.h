@@ -17,16 +17,14 @@ public:
 
     bool getHasMoved() const;
     void setHasMovedTrue();
+    bool checkPromotion() const;
 
-    bool move(int x, int y);
-    bool checkPromotion();
-
-    std::pair<bool, bool> getEnPassant();
+    std::pair<bool, bool> getEnPassant() const;
     void enPassantActive(bool left);
     void enPassantInactive();
 
     void setTotalPawnsMoved(int totalPawnsMoved);
-    int getTotalPawnsMoved();
+    int getTotalPawnsMoved() const;
 
-    void abstractClass();
+    void abstractClass() const;
 };

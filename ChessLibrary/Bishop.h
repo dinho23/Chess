@@ -11,5 +11,5 @@ private:
 public:
     Bishop(bool type);
 
-    void abstractClass();
+    void abstractClass() const;
 };

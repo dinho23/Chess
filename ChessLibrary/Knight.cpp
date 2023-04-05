@@ -7,7 +7,7 @@ Knight::Knight(bool type)
 {
 }
 
-void Knight::abstractClass()
+void Knight::abstractClass() const
 {
 	return;
 }

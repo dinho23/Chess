@@ -21,34 +21,12 @@ void Pawn::setHasMovedTrue()
 	hasMoved = true;
 }
 
-bool Pawn::move(int x, int y)
-{
-	if (x == posX && y == posY)
-		return false;
-
-	if (y != posY)
-		return false;
-
-	if (posX == 1) {
-		if (x > posX + 2)
-			return false;
-	}
-
-	if (posX == 6) {
-		if (x < posX - 2)
-			return false;
-	}
-
-	posX = x;
-	return true;
-}
-
-bool Pawn::checkPromotion()
+bool Pawn::checkPromotion() const
 {
 	return 7 == this->getPosition().first || 0 == this->getPosition().first;
 }
 
-std::pair<bool, bool> Pawn::getEnPassant()
+std::pair<bool, bool> Pawn::getEnPassant() const
 {
 	return enPassant;
 }
@@ -73,12 +51,12 @@ void Pawn::setTotalPawnsMoved(int totalPawnsMoved)
 	this->totalPawnsMoved = totalPawnsMoved;
 }
 
-int Pawn::getTotalPawnsMoved()
+int Pawn::getTotalPawnsMoved() const
 {
 	return totalPawnsMoved;
 }
 
-void Pawn::abstractClass()
+void Pawn::abstractClass() const
 {
 	return;
 }

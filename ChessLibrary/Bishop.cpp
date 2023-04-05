@@ -7,7 +7,7 @@ Bishop::Bishop(bool type)
 {
 }
 
-void Bishop::abstractClass()
+void Bishop::abstractClass() const
 {
 	return;
 }

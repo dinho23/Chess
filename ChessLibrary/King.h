@@ -14,8 +14,8 @@ protected:
 public:
     King(bool type);
 
-    bool kingCastleAvailable();
+    bool kingCastleAvailable() const;
     void setCastleUnavailable();
 
-    void abstractClass();
+    void abstractClass() const;
 };

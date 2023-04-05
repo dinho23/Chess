@@ -6,7 +6,7 @@ Queen::Queen(bool type)
 {
 }
 
-void Queen::abstractClass()
+void Queen::abstractClass() const
 {
 	return;
 }

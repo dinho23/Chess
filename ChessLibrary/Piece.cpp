@@ -16,7 +16,7 @@ void Piece::setPosition(const int& x, const int& y)
 	posY = y;
 }
 
-std::pair<int, int> Piece::getPosition()
+std::pair<int, int> Piece::getPosition() const
 {
 	return std::pair<int, int>(posX, posY);
 }
@@ -39,10 +39,4 @@ std::string Piece::getShortName() const
 bool Piece::getType() const
 {
 	return m_type;
-}
-
-std::ostream& operator<<(std::ostream& output, const Piece& piece)
-{
-	output << piece.m_name;
-	return output;
 }

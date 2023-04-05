@@ -3,7 +3,8 @@
 
 
 Rook::Rook(bool type)
-	: Piece(def_name, type)
+	: Piece(def_name, type),
+	hasMoved {false}
 {
 }
 

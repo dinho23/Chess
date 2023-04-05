@@ -618,13 +618,13 @@ void Board::removeIlegalCastle(std::vector<std::pair<int, int>>& allMoves, Piece
 	int tempI = piece->getPosition().first;
 	int tempJ = piece->getPosition().second;
 
-	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 1 })) == allMoves.end()) {
+	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 1 })) == allMoves.end() || inCheck().first) {
 		if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 2 })) != allMoves.end()) {
 			allMoves.erase(std::remove(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ - 2 })), allMoves.end());
 		}
 	}
 
-	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 1 })) == allMoves.end()) {
+	if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 1 })) == allMoves.end() || inCheck().first) {
 		if (std::find(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 2 })) != allMoves.end()) {
 			allMoves.erase(std::remove(allMoves.begin(), allMoves.end(), std::pair<int, int>({ tempI, tempJ + 2 })), allMoves.end());
 		}
@@ -760,17 +760,17 @@ std::pair<bool, bool> Board::castleAvailable(Piece* piece) const
 
 	Piece* tempRook = board[piece->getPosition().first][0];
 	if (!dynamic_cast<Rook*>(tempRook)) {
-		shortCastle = false;
-	}
-	else if (!dynamic_cast<Rook*>(tempRook)->rookHasMoved()) {
-		shortCastle = true;
-	}
-	tempRook = board[piece->getPosition().first][7];
-	if (!dynamic_cast<Rook*>(tempRook)) {
 		longCastle = false;
 	}
 	else if (dynamic_cast<Rook*>(tempRook)->rookHasMoved()) {
-		longCastle = true;
+		longCastle = false;
+	}
+	tempRook = board[piece->getPosition().first][7];
+	if (!dynamic_cast<Rook*>(tempRook)) {
+		shortCastle = false;
+	}
+	else if (dynamic_cast<Rook*>(tempRook)->rookHasMoved()) {
+		shortCastle = false;
 	}
 
 	if (!shortCastle && !longCastle) {
@@ -780,14 +780,14 @@ std::pair<bool, bool> Board::castleAvailable(Piece* piece) const
 	int kingRank = piece->getPosition().first;
 
 	if (board[kingRank][1] || board[kingRank][2] && board[kingRank][3]) {
-		shortCastle = false;
-	}
-
-	if (board[kingRank][5] || board[kingRank][6]) {
 		longCastle = false;
 	}
 
-	return std::pair<bool, bool>({ shortCastle, longCastle });
+	if (board[kingRank][5] || board[kingRank][6]) {
+		shortCastle = false;
+	}
+
+	return std::pair<bool, bool>({ longCastle, shortCastle });
 }
 
 void Board::promotePawn(Piece* piece)

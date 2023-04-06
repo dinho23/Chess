@@ -14,6 +14,7 @@ protected:
 
 public:
 	Piece(const std::string& name, const bool& type);
+	virtual ~Piece();
 
 	void setPosition(const int& x, const int& y);
 	std::pair<int, int> getPosition() const;

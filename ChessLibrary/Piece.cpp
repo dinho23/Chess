@@ -10,6 +10,13 @@ Piece::Piece(const std::string& name, const bool& type)
 {
 }
 
+Piece::~Piece()
+{
+	m_name.clear();
+	m_type = false;
+	posX = posY = 0;
+}
+
 void Piece::setPosition(const int& x, const int& y)
 {
 	posX = x;
